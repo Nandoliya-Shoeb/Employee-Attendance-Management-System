@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!-- ============================================================ -->
+<!-- File: templates/events/event_form.html                      -->
+<!-- Admin: Create / Edit Event Form                             -->
+<!-- ============================================================ -->
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+
+      <!-- Header -->
+      <div class="d-flex align-items-center justify-content-between mb-4" data-aos="fade-up">
+        <div>
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-custom mb-1">
+              <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">Dashboard</a></li>
+              <li class="breadcrumb-item"><a href="{% url 'events:manage_list' %}">Events</a></li>
+              <li class="breadcrumb-item active">{{ action }}</li>
+            </ol>
+          </nav>
+          <h2 class="fw-700 mb-0">{{ title }}</h2>
+        </div>
+        <a href="{% url 'events:manage_list' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-arrow-left me-2"></i>Back
+        </a>
+      </div>
+
+      <form method="post" enctype="multipart/form-data" novalidate id="eventForm" data-aos="fade-up" data-aos-delay="100">
+        {% csrf_token %}
+
+        <div class="row g-4">
+
+          <!-- ── Left Column ─────────────────────────────────── -->
+          <div class="col-lg-8">
+
+            <!-- Basic Info Card -->
+            <div class="card mb-4">
+              <div class="card-body p-4">
+                <h5 class="fw-600 mb-4"><i class="bi bi-info-circle me-2 text-primary"></i>Basic Information</h5>
+
+                <div class="mb-3">
+                  <label for="id_title" class="form-label fw-500">Event Title <span class="text-danger">*</span></label>
+                  {{ form.title }}
+                  {% if form.title.errors %}<div class="invalid-feedback d-block">{{ form.title.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3">
+                  <label for="id_short_description" class="form-label fw-500">Short Description</label>
+                  {{ form.short_description }}
+                  <small class="text-muted">Shown on event cards. Max 300 chars.</small>
+                </div>
+
+                <div class="mb-3">
+                  <label for="id_description" class="form-label fw-500">Full Description <span class="text-danger">*</span></label>
+                  {{ form.description }}
+                  {% if form.description.errors %}<div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3">
+                  <label for="id_category" class="form-label fw-500">Category</label>
+                  {{ form.category }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Date & Location Card -->
+            <div class="card mb-4">
+              <div class="card-body p-4">
+                <h5 class="fw-600 mb-4"><i class="bi bi-calendar3 me-2 text-primary"></i>Date & Location</h5>
+
+                <div class="row g-3 mb-3">
+                  <div class="col-md-6">
+                    <label for="id_date" class="form-label fw-500">Start Date & Time <span class="text-danger">*</span></label>
+                    {{ form.date }}
+                    {% if form.date.errors %}<div class="invalid-feedback d-block">{{ form.date.errors.0 }}</div>{% endif %}
+                  </div>
+                  <div class="col-md-6">
+                    <label for="id_end_date" class="form-label fw-500">End Date & Time</label>
+                    {{ form.end_date }}
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label for="id_location" class="form-label fw-500">Location / Venue <span class="text-danger">*</span></label>
+                  {{ form.location }}
+                  {% if form.location.errors %}<div class="invalid-feedback d-block">{{ form.location.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3">
+                  <label for="id_location_url" class="form-label fw-500">Google Maps Link</label>
+                  {{ form.location_url }}
+                </div>
+
+                <div class="form-check mb-3">
+                  {{ form.is_online }}
+                  <label class="form-check-label fw-500" for="id_is_online">
+                    This is an online event
+                  </label>
+                </div>
+
+                <div class="mb-3" id="onlineLinkDiv" style="display:none;">
+                  <label for="id_online_link" class="form-label fw-500">Online Meeting Link</label>
+                  {{ form.online_link }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Cover Image -->
+            <div class="card mb-4">
+              <div class="card-body p-4">
+                <h5 class="fw-600 mb-4"><i class="bi bi-image me-2 text-primary"></i>Cover Image</h5>
+                {% if event and event.cover_image %}
+                <div class="mb-3">
+                  <img src="{{ event.cover_image.url }}" class="img-thumbnail" style="max-height:200px;" alt="Current cover" />
+                  <small class="text-muted d-block mt-1">Current image — upload a new one to replace.</small>
+                </div>
+                {% endif %}
+                {{ form.cover_image }}
+                <small class="text-muted">Recommended: 1200×600px, JPG or PNG.</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Right Column ────────────────────────────────── -->
+          <div class="col-lg-4">
+
+            <!-- Status & Settings -->
+            <div class="card mb-4">
+              <div class="card-body p-4">
+                <h5 class="fw-600 mb-4"><i class="bi bi-gear me-2 text-primary"></i>Publishing</h5>
+
+                <div class="mb-3">
+                  <label for="id_status" class="form-label fw-500">Status</label>
+                  {{ form.status }}
+                  <small class="text-muted">Only "Published" events are visible to public.</small>
+                </div>
+
+                <div class="form-check mb-3">
+                  {{ form.is_featured }}
+                  <label class="form-check-label fw-500" for="id_is_featured">
+                    <i class="bi bi-star-fill text-warning me-1"></i>Feature this event
+                  </label>
+                  <small class="text-muted d-block">Featured events appear in the hero section.</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Capacity & Pricing -->
+            <div class="card mb-4">
+              <div class="card-body p-4">
+                <h5 class="fw-600 mb-4"><i class="bi bi-ticket-perforated me-2 text-primary"></i>Capacity & Pricing</h5>
+
+                <div class="mb-3">
+                  <label for="id_max_capacity" class="form-label fw-500">Max Capacity <span class="text-danger">*</span></label>
+                  {{ form.max_capacity }}
+                  {% if form.max_capacity.errors %}<div class="invalid-feedback d-block">{{ form.max_capacity.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3">
+                  <label for="id_price" class="form-label fw-500">Ticket Price (₹)</label>
+                  {{ form.price }}
+                  <small class="text-muted">Enter 0 for free events.</small>
+                  {% if form.price.errors %}<div class="invalid-feedback d-block">{{ form.price.errors.0 }}</div>{% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="card">
+              <div class="card-body p-4">
+                <div class="d-grid gap-2">
+                  <button type="submit" class="btn btn-primary btn-lg" id="saveEventBtn">
+                    <i class="bi bi-check-lg me-2"></i>{{ action }} Event
+                  </button>
+                  <a href="{% url 'events:manage_list' %}" class="btn btn-outline-secondary">
+                    Cancel
+                  </a>
+                </div>
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger mt-3">
+                  {% for error in form.non_field_errors %}
+                  <div><i class="bi bi-exclamation-triangle me-2"></i>{{ error }}</div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Show/hide online link field
+  const isOnline = document.getElementById('id_is_online');
+  const onlineDiv = document.getElementById('onlineLinkDiv');
+
+  function toggleOnlineLink() {
+    onlineDiv.style.display = isOnline.checked ? 'block' : 'none';
+  }
+
+  isOnline.addEventListener('change', toggleOnlineLink);
+  toggleOnlineLink(); // Run on page load
+
+  // Loading state
+  document.getElementById('eventForm').addEventListener('submit', function() {
+    const btn = document.getElementById('saveEventBtn');
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    btn.disabled = true;
+  });
+</script>
+{% endblock %}

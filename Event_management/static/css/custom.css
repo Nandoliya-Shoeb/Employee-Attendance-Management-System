@@ -758,3 +758,498 @@ body {
 @media (max-width: 576px) {
   .container { padding-inline: 1rem; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   STEP 3: EVENTS APP STYLES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── HERO SECTION ────────────────────────────────────────────── */
+.hero-section {
+  position: relative;
+  overflow: hidden;
+  padding: 2rem 0 4rem;
+  background: radial-gradient(ellipse at 10% 60%, var(--color-primary-glow) 0%, transparent 55%),
+              radial-gradient(ellipse at 90% 10%, rgba(34,211,238,0.08) 0%, transparent 50%),
+              var(--color-bg);
+}
+
+.hero-bg-glow {
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--color-primary-glow) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-section .container { position: relative; z-index: 1; }
+
+.hero-title {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -1px;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-subtitle {
+  font-size: 1.1rem;
+  max-width: 520px;
+  line-height: 1.7;
+}
+
+/* Hero search bar */
+.hero-search {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  max-width: 560px;
+}
+
+.hero-search .input-group-text {
+  background: var(--color-bg-card);
+  border: none;
+  padding-left: 1rem;
+}
+
+.hero-search .form-control {
+  background: var(--color-bg-card);
+  border: none;
+  font-size: 1rem;
+}
+
+.hero-search .form-control:focus {
+  box-shadow: none;
+  border: none;
+}
+
+.hero-search .btn {
+  border-radius: 0;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+}
+
+/* Category pill badges */
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35em 0.9em;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.badge-pill:hover,
+.badge-pill.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.badge-pill-primary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4em 1em;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: var(--color-primary-glow);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* Hero preview card */
+.hero-event-preview { position: relative; }
+
+.hero-preview-card {
+  position: relative;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg), 0 0 40px var(--color-primary-glow);
+  height: 320px;
+  transition: transform var(--transition-base);
+}
+
+.hero-preview-card:hover { transform: scale(1.02); }
+
+.hero-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-preview-placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-preview-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1.5rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+}
+
+/* ── FILTERS SECTION ─────────────────────────────────────────── */
+.filters-section {
+  background: var(--color-bg-card);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 60px;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+
+/* ── EVENT CARDS ─────────────────────────────────────────────── */
+.event-card-img-wrapper {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.event-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.event-card:hover .event-card-img {
+  transform: scale(1.05);
+}
+
+.event-card-img-placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Event badge overlays on card image */
+.event-card-badges {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.badge-event {
+  padding: 0.3em 0.7em;
+  border-radius: var(--radius-full);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.badge-event.free {
+  background: rgba(34, 197, 94, 0.9);
+  color: #fff;
+}
+
+.badge-event.paid {
+  background: rgba(99, 102, 241, 0.9);
+  color: #fff;
+}
+
+.badge-event.featured {
+  background: rgba(245, 158, 11, 0.9);
+  color: #fff;
+}
+
+.badge-event.full {
+  background: rgba(239, 68, 68, 0.9);
+  color: #fff;
+}
+
+/* Category badge bottom-right of image */
+.event-card-category {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  padding: 0.25em 0.65em;
+  border-radius: var(--radius-full);
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+
+.event-card-title { line-height: 1.3; }
+
+.event-title-link {
+  color: var(--color-text);
+  transition: color var(--transition-fast);
+}
+
+.event-title-link:hover { color: var(--color-primary); }
+
+/* Event meta row (date, time, location) */
+.event-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.event-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
+
+.event-meta-item i { color: var(--color-primary); flex-shrink: 0; }
+
+/* ── SEATS PROGRESS BAR ──────────────────────────────────────── */
+.progress-seats {
+  height: 6px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-bar-seats {
+  border-radius: var(--radius-full);
+  transition: width 0.8s ease;
+}
+
+/* ── PAGINATION ───────────────────────────────────────────────── */
+.pagination-custom .page-link {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm) !important;
+  padding: 0.45rem 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all var(--transition-fast);
+}
+
+.pagination-custom .page-link:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.pagination-custom .page-item.active .page-link {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+/* ── EVENT DETAIL PAGE ───────────────────────────────────────── */
+.event-detail-img-wrapper {
+  position: relative;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  max-height: 420px;
+}
+
+.event-detail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  max-height: 420px;
+}
+
+.event-featured-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(245, 158, 11, 0.9);
+  color: #fff;
+  padding: 0.4em 1em;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 700;
+  backdrop-filter: blur(4px);
+}
+
+.event-detail-meta {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.category-badge {
+  background: var(--color-primary-glow);
+  color: var(--color-primary);
+  border: 1px solid rgba(99,102,241,0.3);
+  padding: 0.3em 0.85em;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* ── COUNTDOWN TIMER ─────────────────────────────────────────── */
+.countdown-wrapper {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+}
+
+.countdown-grid {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.countdown-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+}
+
+.countdown-num {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.countdown-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.countdown-sep {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  opacity: 0.5;
+  margin-bottom: 16px;
+}
+
+/* ── REGISTRATION SIDEBAR CARD ───────────────────────────────── */
+.registration-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--color-border);
+}
+
+.event-price-display {
+  margin-bottom: 0.5rem;
+}
+
+.price-free {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-success);
+}
+
+.price-amount {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.price-label {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-left: 4px;
+}
+
+/* Event info list (sidebar) */
+.event-info-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.875rem;
+}
+
+.event-info-list li:last-child { border-bottom: none; }
+.event-info-list li i { margin-top: 2px; flex-shrink: 0; }
+
+/* ── EVENT DESCRIPTION ───────────────────────────────────────── */
+.event-description {
+  line-height: 1.8;
+  font-size: 0.95rem;
+}
+
+.event-description p { margin-bottom: 1rem; }
+
+/* ── PAST EVENTS ─────────────────────────────────────────────── */
+.event-card-past {
+  transition: all var(--transition-fast);
+}
+
+.event-card-past:hover {
+  transform: translateX(4px);
+  border-color: var(--color-primary);
+}
+
+.past-event-date {
+  min-width: 48px;
+  background: var(--color-primary-glow);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem;
+  color: var(--color-primary);
+}
+
+/* ── EMPTY STATE ICON ─────────────────────────────────────────── */
+.empty-state-icon {
+  width: 100px;
+  height: 100px;
+  background: var(--color-border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  font-size: 2.5rem;
+  color: var(--color-text-subtle);
+}
+
+/* ── BADGE STATUS FOR EVENTS ─────────────────────────────────── */
+.badge-status-draft      { color: var(--color-text-muted); background: var(--color-border); padding: 0.25em 0.6em; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600; }
+.badge-status-published  { color: var(--color-success);    background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); padding: 0.25em 0.6em; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600; }
+.badge-status-cancelled  { color: var(--color-danger);     background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); padding: 0.25em 0.6em; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600; }
+.badge-status-completed  { color: var(--color-primary);    background: var(--color-primary-glow); border: 1px solid rgba(99,102,241,0.3); padding: 0.25em 0.6em; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600; }
+
+/* ── RESPONSIVE EVENTS ───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .hero-title { font-size: 2rem; }
+  .hero-subtitle { font-size: 0.95rem; }
+  .countdown-num { font-size: 1.5rem; }
+  .countdown-item { min-width: 44px; }
+  .filters-section { top: 0; position: relative; }
+}

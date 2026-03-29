@@ -1,9 +1,363 @@
-<!DOCTYPE html>
-<!-- File: templates/events/event_list.html -->
-<html lang="en">
-<head><meta charset="UTF-8"><title>Events | EventHub</title></head>
-<body>
-<h1>EventHub — Coming Soon</h1>
-<p>Step 3 (Events App) will build this page fully.</p>
-</body>
-</html>
+{% extends 'base.html' %}
+{% load static %}
+
+<!-- ============================================================ -->
+<!-- File: templates/events/event_list.html                      -->
+<!-- Public events homepage with search, filter, card grid       -->
+<!-- Skills: frontend-design + i-motion + ui-ux-pro-max + seo   -->
+<!-- ============================================================ -->
+
+{% block title %}Discover Events{% endblock %}
+{% block meta_description %}Browse and register for upcoming events near you — technology, music, sports, business and more on EventHub.{% endblock %}
+
+{% block content %}
+
+<!-- ── HERO SECTION ──────────────────────────────────────────── -->
+<section class="hero-section">
+  <div class="hero-bg-glow"></div>
+  <div class="container py-5">
+    <div class="row align-items-center py-4">
+      <div class="col-lg-7" data-aos="fade-right">
+        <span class="badge-pill-primary mb-3">
+          <i class="bi bi-lightning-charge-fill me-1"></i>
+          {{ total_events }} Upcoming Events
+        </span>
+        <h1 class="hero-title">
+          Discover & Attend<br>
+          <span class="gradient-text">Amazing Events</span>
+        </h1>
+        <p class="hero-subtitle text-muted mt-3 mb-4">
+          Find and register for tech talks, music concerts, sports events, and business
+          conferences — all in one place.
+        </p>
+
+        <!-- Quick Search Bar -->
+        <form method="get" action="" class="hero-search-form" id="heroSearchForm">
+          <div class="input-group input-group-lg hero-search">
+            <span class="input-group-text border-0">
+              <i class="bi bi-search text-muted"></i>
+            </span>
+            <input type="text"
+                   name="q"
+                   class="form-control border-0"
+                   placeholder="Search events, locations..."
+                   value="{{ search_query }}"
+                   autocomplete="off" />
+            <button type="submit" class="btn btn-primary px-4">
+              Search
+            </button>
+          </div>
+        </form>
+
+        <!-- Category Pills -->
+        <div class="d-flex flex-wrap gap-2 mt-4">
+          <a href="{% url 'events:event_list' %}"
+             class="badge-pill {% if not active_category %}active{% endif %}">
+            All
+          </a>
+          {% for cat in categories %}
+          <a href="?category={{ cat.id }}"
+             class="badge-pill {% if active_category == cat.id|stringformat:'s' %}active{% endif %}">
+            <i class="{{ cat.icon }} me-1"></i>{{ cat.name }}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Hero Visual — Featured Events Peek -->
+      <div class="col-lg-5 d-none d-lg-block" data-aos="fade-left" data-aos-delay="200">
+        {% if featured_events %}
+        <div class="hero-event-preview">
+          {% for event in featured_events|slice:":1" %}
+          <a href="{{ event.get_absolute_url }}" class="text-decoration-none">
+            <div class="hero-preview-card">
+              {% if event.cover_image %}
+              <img src="{{ event.cover_image.url }}" alt="{{ event.title }}" class="hero-preview-img" />
+              {% else %}
+              <div class="hero-preview-placeholder">
+                <i class="bi bi-calendar-event display-4 text-primary"></i>
+              </div>
+              {% endif %}
+              <div class="hero-preview-overlay">
+                <span class="badge bg-primary">Featured</span>
+                <h5 class="text-white fw-700 mt-2">{{ event.title }}</h5>
+                <small class="text-white-50">
+                  <i class="bi bi-calendar3 me-1"></i>{{ event.date|date:"M d, Y" }}
+                </small>
+              </div>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FILTERS BAR ────────────────────────────────────────────── -->
+<section class="filters-section py-3 sticky-filters">
+  <div class="container">
+    <form method="get" action="" id="filterForm">
+      <!-- Preserve search query -->
+      {% if search_query %}
+      <input type="hidden" name="q" value="{{ search_query }}" />
+      {% endif %}
+
+      <div class="row g-2 align-items-center">
+        <!-- Results count -->
+        <div class="col-auto">
+          <span class="text-muted small">
+            <strong class="text-body">{{ total_events }}</strong> events found
+          </span>
+        </div>
+
+        <div class="col">
+          <div class="d-flex gap-2 justify-content-end flex-wrap">
+            <!-- Category -->
+            {{ search_form.category }}
+            <!-- Price -->
+            {{ search_form.price_filter }}
+            <!-- Sort -->
+            {{ search_form.sort }}
+
+            <!-- Clear Filters -->
+            {% if search_query or request.GET.category or request.GET.price_filter %}
+            <a href="{% url 'events:event_list' %}" class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-x-circle me-1"></i>Clear
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ── EVENTS GRID ────────────────────────────────────────────── -->
+<section class="events-section py-5">
+  <div class="container">
+
+    {% if page_obj %}
+    <div class="row g-4" id="eventsGrid">
+      {% for event in page_obj %}
+      <div class="col-12 col-md-6 col-lg-4"
+           data-aos="fade-up"
+           data-aos-delay="{{ forloop.counter0|add:'1' }}00">
+        <div class="card event-card h-100">
+
+          <!-- Cover Image -->
+          <div class="event-card-img-wrapper">
+            {% if event.cover_image %}
+            <img src="{{ event.cover_image.url }}"
+                 alt="{{ event.title }}"
+                 class="event-card-img"
+                 loading="lazy" />
+            {% else %}
+            <div class="event-card-img-placeholder">
+              <i class="bi bi-calendar-event fs-1 text-primary opacity-50"></i>
+            </div>
+            {% endif %}
+
+            <!-- Badges overlay -->
+            <div class="event-card-badges">
+              {% if event.is_free %}
+              <span class="badge-event free">FREE</span>
+              {% else %}
+              <span class="badge-event paid">{{ event.price_display }}</span>
+              {% endif %}
+              {% if event.is_featured %}
+              <span class="badge-event featured">
+                <i class="bi bi-star-fill me-1"></i>Featured
+              </span>
+              {% endif %}
+              {% if event.is_full %}
+              <span class="badge-event full">SOLD OUT</span>
+              {% endif %}
+            </div>
+
+            <!-- Category Badge -->
+            {% if event.category %}
+            <div class="event-card-category">
+              <i class="{{ event.category.icon }} me-1"></i>{{ event.category.name }}
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Card Body -->
+          <div class="card-body d-flex flex-column p-4">
+            <h5 class="event-card-title fw-700 mb-2">
+              <a href="{{ event.get_absolute_url }}" class="text-decoration-none event-title-link">
+                {{ event.title }}
+              </a>
+            </h5>
+
+            <p class="text-muted small mb-3 flex-grow-1">
+              {{ event.short_description|truncatechars:100 }}
+            </p>
+
+            <!-- Meta Info -->
+            <div class="event-meta mb-3">
+              <div class="event-meta-item">
+                <i class="bi bi-calendar3"></i>
+                <span>{{ event.date|date:"M d, Y" }}</span>
+              </div>
+              <div class="event-meta-item">
+                <i class="bi bi-clock"></i>
+                <span>{{ event.date|date:"g:i A" }}</span>
+              </div>
+              <div class="event-meta-item">
+                <i class="bi bi-geo-alt"></i>
+                <span>{{ event.location|truncatechars:35 }}</span>
+              </div>
+            </div>
+
+            <!-- Seats Progress Bar -->
+            <div class="seats-indicator mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <small class="text-muted">
+                  <i class="bi bi-people me-1"></i>
+                  {{ event.seats_remaining }} seats left
+                </small>
+                <small class="text-muted">{{ event.seats_percentage }}% filled</small>
+              </div>
+              <div class="progress progress-seats">
+                <div class="progress-bar progress-bar-seats
+                  {% if event.seats_percentage >= 90 %}bg-danger
+                  {% elif event.seats_percentage >= 70 %}bg-warning
+                  {% else %}bg-success{% endif %}"
+                     style="width: {{ event.seats_percentage }}%"
+                     role="progressbar"
+                     aria-valuenow="{{ event.seats_percentage }}"
+                     aria-valuemin="0"
+                     aria-valuemax="100">
+                </div>
+              </div>
+            </div>
+
+            <!-- Register Button -->
+            <a href="{{ event.get_absolute_url }}"
+               class="btn {% if event.is_full %}btn-outline-secondary disabled{% else %}btn-primary{% endif %} w-100">
+              {% if event.is_full %}
+                <i class="bi bi-x-circle me-2"></i>Sold Out
+              {% elif not event.is_upcoming %}
+                <i class="bi bi-clock-history me-2"></i>View Event
+              {% else %}
+                <i class="bi bi-ticket-perforated me-2"></i>
+                {{ event.is_free|yesno:"Get Free Ticket,Register Now" }}
+              {% endif %}
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Events pagination" class="mt-5">
+      <ul class="pagination pagination-custom justify-content-center gap-1">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">
+            <i class="bi bi-chevron-left"></i>
+          </a>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <li class="page-item active">
+          <span class="page-link">{{ num }}</span>
+        </li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">
+            <i class="bi bi-chevron-right"></i>
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <!-- Empty State — ui-ux-pro-max: helpful message + CTA -->
+    <div class="empty-state text-center py-5" data-aos="fade-up">
+      <div class="empty-state-icon mb-4">
+        <i class="bi bi-calendar-x"></i>
+      </div>
+      <h3 class="fw-700 mb-2">No Events Found</h3>
+      <p class="text-muted mb-4">
+        {% if search_query %}
+          No events match "<strong>{{ search_query }}</strong>".
+          Try a different search term or clear your filters.
+        {% else %}
+          There are no upcoming events right now. Check back soon!
+        {% endif %}
+      </p>
+      <div class="d-flex gap-3 justify-content-center">
+        <a href="{% url 'events:event_list' %}" class="btn btn-primary">
+          <i class="bi bi-arrow-clockwise me-2"></i>Show All Events
+        </a>
+        {% if user.is_staff %}
+        <a href="{% url 'events:create' %}" class="btn btn-outline-primary">
+          <i class="bi bi-plus-circle me-2"></i>Create Event
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+<!-- ── PAST EVENTS ────────────────────────────────────────────── -->
+{% if past_events and not search_query %}
+<section class="past-events-section py-4 border-top">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="fw-700 mb-0">Past Events</h4>
+      <a href="?sort=-date" class="btn btn-sm btn-outline-secondary">View All</a>
+    </div>
+    <div class="row g-3">
+      {% for event in past_events %}
+      <div class="col-md-4" data-aos="fade-up">
+        <div class="card event-card-past p-3 d-flex flex-row gap-3 align-items-center">
+          <div class="past-event-date text-center">
+            <span class="d-block fw-700 fs-5">{{ event.date|date:"d" }}</span>
+            <span class="d-block text-muted small">{{ event.date|date:"M" }}</span>
+          </div>
+          <div class="flex-grow-1">
+            <h6 class="fw-600 mb-1">{{ event.title|truncatechars:40 }}</h6>
+            <small class="text-muted">
+              <i class="bi bi-geo-alt me-1"></i>{{ event.location|truncatechars:30 }}
+            </small>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Auto-submit filter form on dropdown change
+  document.querySelectorAll('#filterForm select').forEach(select => {
+    select.addEventListener('change', () => {
+      document.getElementById('filterForm').submit();
+    });
+  });
+</script>
+{% endblock %}

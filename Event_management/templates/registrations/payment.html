@@ -2,7 +2,8 @@
 
 <!-- ============================================================ -->
 <!-- File: templates/registrations/payment.html                    -->
-<!-- Stub for Payment gateway (Step 7)                             -->
+<!-- Step 7: Razorpay Payment Gateway Integration                  -->
+<!-- Skills: frontend-design + owasp-security                    -->
 <!-- ============================================================ -->
 
 {% block title %}Complete Payment{% endblock %}
@@ -15,30 +16,36 @@
       <i class="bi bi-credit-card-2-front text-primary display-1 mb-3 d-block"></i>
       <h2 class="fw-800 mb-3">Complete Your Payment</h2>
       
-      <div class="card shadow-sm border-0 mb-4">
+      <div class="card shadow-sm border-0 mb-4 text-start">
         <div class="card-body p-4 bg-light rounded">
           <h5 class="fw-700 mb-1">{{ event.title }}</h5>
           <p class="text-muted mb-3">{{ registration.name }} • {{ registration.email }}</p>
           <hr class="text-muted">
           <div class="d-flex justify-content-between align-items-center">
             <span class="fs-5 fw-600">Total Amount:</span>
-            <span class="fs-4 fw-800 text-primary">{{ event.price_display }}</span>
+            <span class="fs-4 fw-800 text-primary">₹{{ event.price }}</span>
           </div>
         </div>
       </div>
 
-      <div class="alert alert-warning mb-4 shadow-sm border-0 text-start">
-        <i class="bi bi-info-circle-fill me-2"></i>
-        <strong>Payment Gateway Stub</strong><br>
-        <small>This is a placeholder for the Razorpay integration (Step 7). In the full flow, the Razorpay checkout script would appear here.</small>
+      <div class="alert alert-info mb-4 shadow-sm border-0 text-start">
+        <i class="bi bi-shield-lock-fill me-2 fs-5 text-info"></i>
+        Secured by <strong>Razorpay</strong>. Your payment details are encrypted.
       </div>
 
-      <!-- Temporary Fake Success Button for testing flow -->
-      <form method="post" action="{% url 'registrations:success' registration.pk %}">
+      <!-- Razorpay Checkout Form -->
+      <form action="{% url 'registrations:payment_callback' registration.pk %}" method="POST" id="razorpayForm">
         {% csrf_token %}
-        <button type="submit" class="btn btn-success btn-lg w-100 rounded-pill shadow">
-          <i class="bi bi-check-circle me-2"></i>Simulate Paid & Confirm
-        </button>
+        <!-- Hidden inputs handled by Razorpay script -->
+        <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+        <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
+        <input type="hidden" name="razorpay_signature" id="razorpay_signature">
+        
+        <div class="d-grid">
+          <button type="button" id="pay-btn" class="btn btn-primary btn-lg rounded-pill shadow">
+            Pay ₹{{ event.price }} Securely
+          </button>
+        </div>
       </form>
 
       <a href="{% url 'registrations:registration_detail' registration.pk %}" class="btn btn-link mt-3 text-muted">
@@ -48,4 +55,55 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Razorpay Checkout JS -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  var options = {
+    "key": "{{ razorpay_key_id }}", // Enter the Key ID generated from the Dashboard
+    "amount": "{{ amount }}", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+    "currency": "{{ currency }}",
+    "name": "EventHub",
+    "description": "Ticket for {{ event.title }}",
+    "image": "https://cdn-icons-png.flaticon.com/512/3233/3233515.png", // Demo logo
+    "order_id": "{{ razorpay_order_id }}", // Passed from the Django view
+    "handler": function (response){
+        // Populate hidden form fields with Razorpay response
+        document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
+        document.getElementById('razorpay_order_id').value = response.razorpay_order_id;
+        document.getElementById('razorpay_signature').value = response.razorpay_signature;
+        
+        // Disable button & change text
+        var btn = document.getElementById('pay-btn');
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Confirming Payment...';
+        btn.disabled = true;
+
+        // Submit the form to the callback URL to verify signature
+        document.getElementById('razorpayForm').submit();
+    },
+    "prefill": {
+        "name": "{{ registration.name|escapejs }}",
+        "email": "{{ registration.email|escapejs }}",
+        "contact": "{{ registration.phone|escapejs|default:'' }}"
+    },
+    "theme": {
+        "color": "#6366f1" // EventHub Primary Color
+    }
+  };
+
+  var rzp1 = new Razorpay(options);
+  
+  // Handle popup close event
+  rzp1.on('payment.failed', function (response){
+      // You can also add custom error handling here if desired.
+      console.error(response.error.description);
+  });
+
+  document.getElementById('pay-btn').onclick = function(e){
+      rzp1.open();
+      e.preventDefault();
+  }
+</script>
 {% endblock %}

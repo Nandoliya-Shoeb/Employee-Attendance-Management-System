@@ -18,6 +18,15 @@ from .models import Registration, Ticket
 from .forms import RegistrationForm
 from .utils import generate_qr_code, generate_pdf_ticket, send_confirmation_email
 
+import razorpay
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+
+# Configure Razorpay Client
+razorpay_client = razorpay.Client(
+    auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
+)
+
 
 # ── PUBLIC REGISTRATION FLOW ──────────────────────────────────
 
@@ -86,9 +95,11 @@ def register_for_event(request, event_id):
                     # ── Step 4: Generate PDF Ticket ───────────────
                     generate_pdf_ticket(registration)
 
-                    # ── Step 5: Send Confirmation Email ───────────
+                    # ── Step 5: Dispatch Task ─────────────────────
+                    # If free, auto-confirm and send email via task
                     if event.is_free:
-                        send_confirmation_email(registration)
+                        from .tasks import send_confirmation_email_task
+                        send_confirmation_email_task.delay(registration.pk)
 
                     # ── Step 6: Redirect to success page ──────────
                     if event.is_free:
@@ -270,15 +281,76 @@ def download_ticket(request, pk):
 def payment_page(request, pk):
     """
     Show payment page for pending registration.
-    Stub for Step 7 (Razorpay integration).
-    For free events this is never reached.
+    Step 7 — Razorpay integration.
     """
     registration = get_object_or_404(
         Registration,
         pk=pk,
-        user=request.user
+        user=request.user,
+        status=Registration.STATUS_PENDING
     )
-    return render(request, 'registrations/payment.html', {
-        'registration': registration,
-        'event': registration.event,
+    event = registration.event
+    amount_in_paise = int(event.price * 100)
+
+    # 1. Create Razorpay Order
+    razorpay_order = razorpay_client.order.create({
+        'amount': amount_in_paise,
+        'currency': 'INR',
+        'payment_capture': '1',
+        'notes': {
+            'registration_id': registration.id,
+            'event_id': event.id
+        }
     })
+
+    context = {
+        'registration': registration,
+        'event': event,
+        'razorpay_order_id': razorpay_order['id'],
+        'razorpay_key_id': settings.RAZORPAY_KEY_ID,
+        'amount': amount_in_paise,
+        'currency': 'INR',
+    }
+    return render(request, 'registrations/payment.html', context)
+
+
+@csrf_exempt
+def payment_callback(request, pk):
+    """
+    Callback URL where Razorpay posts the payment payload after checkout.
+    Verifies signature and confirms the registration.
+    """
+    registration = get_object_or_404(Registration, pk=pk)
+
+    if request.method == "POST":
+        payment_id = request.POST.get('razorpay_payment_id', '')
+        order_id = request.POST.get('razorpay_order_id', '')
+        signature = request.POST.get('razorpay_signature', '')
+
+        # Construct dictionary for verification
+        params_dict = {
+            'razorpay_order_id': order_id,
+            'razorpay_payment_id': payment_id,
+            'razorpay_signature': signature
+        }
+
+        try:
+            # 2. Verify Payment Signature
+            razorpay_client.utility.verify_payment_signature(params_dict)
+
+            # If here, payment matches exactly. Mark confirmed!
+            registration.status = Registration.STATUS_CONFIRMED
+            registration.save()
+
+            # 3. Offload sending the PDF confirmation email to Celery
+            from .tasks import send_confirmation_email_task
+            send_confirmation_email_task.delay(registration.pk)
+
+            messages.success(request, "🎉 Payment successful! Your ticket is confirmed.")
+            return redirect('registrations:success', pk=registration.pk)
+
+        except razorpay.errors.SignatureVerificationError:
+            messages.error(request, "Payment verification failed. If money was deducted, it will be refunded.")
+            return redirect('registrations:payment', pk=registration.pk)
+
+    return redirect('registrations:my_registrations')

@@ -28,6 +28,7 @@ urlpatterns = [
     # Download PDF ticket
     path('<int:pk>/download/', views.download_ticket, name='download_ticket'),
 
-    # Payment page (Step 7 — Razorpay)
+    # Payment page & callback (Step 7 — Razorpay)
     path('<int:pk>/payment/', views.payment_page, name='payment'),
+    path('<int:pk>/payment/callback/', views.payment_callback, name='payment_callback'),
 ]

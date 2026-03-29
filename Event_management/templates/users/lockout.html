@@ -1,10 +1,51 @@
-<!DOCTYPE html>
-<!-- File: templates/users/lockout.html -->
-<html lang="en">
-<head><meta charset="UTF-8"><title>Account Locked | EventHub</title></head>
-<body>
-<h1>Account Temporarily Locked</h1>
-<p>Too many failed login attempts. Please wait 5 minutes before trying again.</p>
-<a href="/">Return to Home</a>
-</body>
-</html>
+{% extends 'base.html' %}
+
+<!-- ============================================================ -->
+<!-- File: templates/users/lockout.html                          -->
+<!-- Shown after 5 failed login attempts (django-axes)           -->
+<!-- ============================================================ -->
+
+{% block title %}Account Locked{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+      <div class="col-12 col-md-6 col-lg-5">
+        <div class="card lockout-card text-center p-5" data-aos="fade-up">
+          <div class="mb-4">
+            <div class="auth-icon-wrapper mx-auto mb-4" style="background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4);">
+              <i class="bi bi-shield-lock-fill" style="color: #ef4444;"></i>
+            </div>
+            <h1 class="h3 fw-700 mb-2">Account Temporarily Locked</h1>
+            <p class="text-muted mb-4">
+              Too many failed login attempts detected.
+              Your account has been locked for <strong>5 minutes</strong> for security.
+            </p>
+          </div>
+
+          <div class="alert alert-warning text-start mb-4">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>What happened?</strong><br>
+            <small>After 5 unsuccessful login attempts, we temporarily lock accounts to protect you from unauthorized access.</small>
+          </div>
+
+          <p class="text-muted small mb-4">
+            Please wait 5 minutes, then try again. If you've forgotten your password,
+            use the link below to reset it.
+          </p>
+
+          <div class="d-flex flex-column gap-3">
+            <a href="{% url 'account_reset_password' %}" class="btn btn-primary">
+              <i class="bi bi-key me-2"></i>Reset Your Password
+            </a>
+            <a href="/" class="btn btn-outline-secondary">
+              <i class="bi bi-house me-2"></i>Return to Home
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

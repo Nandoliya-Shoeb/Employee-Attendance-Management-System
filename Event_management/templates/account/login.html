@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!-- ============================================================ -->
+<!-- File: templates/account/login.html                          -->
+<!-- Django Event Management System — Login Page (allauth)       -->
+<!-- Skills: frontend-design + owasp-security + i-motion         -->
+<!-- ============================================================ -->
+
+{% block title %}Sign In{% endblock %}
+{% block meta_description %}Sign in to EventHub — Access your tickets, registrations, and upcoming events.{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100 py-5">
+      <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
+
+        <div class="card auth-card" data-aos="fade-up">
+
+          <!-- Card Header -->
+          <div class="card-header-auth text-center py-4">
+            <div class="auth-icon-wrapper mb-3">
+              <i class="bi bi-box-arrow-in-right"></i>
+            </div>
+            <h1 class="h3 fw-700 mb-1">Welcome Back</h1>
+            <p class="text-muted mb-0">Sign in to your EventHub account</p>
+          </div>
+
+          <div class="card-body px-4 px-md-5 py-4">
+            <form method="post" action="{% url 'account_login' %}" novalidate id="loginForm">
+              {% csrf_token %}
+
+              <!-- Non-field errors (e.g. invalid credentials, lockout) -->
+              {% if form.non_field_errors %}
+              <div class="alert alert-danger d-flex align-items-center mb-3" role="alert">
+                <i class="bi bi-shield-exclamation me-2 fs-5"></i>
+                <div>{{ form.non_field_errors.0 }}</div>
+              </div>
+              {% endif %}
+
+              <!-- Email -->
+              <div class="mb-3">
+                <label for="id_login" class="form-label fw-500">
+                  Email Address <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                  <input type="email"
+                         name="login"
+                         id="id_login"
+                         class="form-control {% if form.login.errors %}is-invalid{% endif %}"
+                         placeholder="your@email.com"
+                         autocomplete="email"
+                         required />
+                </div>
+                {% if form.login.errors %}
+                <div class="invalid-feedback d-block">
+                  <i class="bi bi-exclamation-circle me-1"></i>{{ form.login.errors.0 }}
+                </div>
+                {% endif %}
+              </div>
+
+              <!-- Password -->
+              <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <label for="id_password" class="form-label fw-500 mb-0">
+                    Password <span class="text-danger">*</span>
+                  </label>
+                  <a href="{% url 'account_reset_password' %}" class="text-primary small">
+                    Forgot password?
+                  </a>
+                </div>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                  <input type="password"
+                         name="password"
+                         id="id_password"
+                         class="form-control {% if form.password.errors %}is-invalid{% endif %}"
+                         placeholder="Your password"
+                         autocomplete="current-password"
+                         required />
+                  <button class="btn btn-outline-secondary" type="button"
+                          id="toggleLoginPassword" aria-label="Toggle password visibility">
+                    <i class="bi bi-eye" id="loginEyeIcon"></i>
+                  </button>
+                </div>
+                {% if form.password.errors %}
+                <div class="invalid-feedback d-block">
+                  <i class="bi bi-exclamation-circle me-1"></i>{{ form.password.errors.0 }}
+                </div>
+                {% endif %}
+              </div>
+
+              <!-- Remember Me -->
+              <div class="mb-4 form-check">
+                <input type="checkbox" class="form-check-input" id="id_remember" name="remember" />
+                <label class="form-check-label text-muted" for="id_remember">
+                  Keep me signed in for 30 days
+                </label>
+              </div>
+
+              <!-- Submit -->
+              <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-primary btn-lg btn-auth" id="loginBtn">
+                  <i class="bi bi-box-arrow-in-right me-2"></i>Sign In to EventHub
+                </button>
+              </div>
+
+              <!-- Security note -->
+              <div class="text-center">
+                <small class="text-muted">
+                  <i class="bi bi-shield-check me-1 text-success"></i>
+                  Protected by 256-bit encryption
+                </small>
+              </div>
+            </form>
+          </div>
+
+          <div class="card-footer-auth text-center py-3">
+            <span class="text-muted">Don't have an account? </span>
+            <a href="{% url 'users:register' %}" class="text-primary fw-600">Create Account →</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.getElementById('toggleLoginPassword').addEventListener('click', function() {
+    const input = document.getElementById('id_password');
+    const icon = document.getElementById('loginEyeIcon');
+    input.type = input.type === 'password' ? 'text' : 'password';
+    icon.className = input.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+  });
+
+  document.getElementById('loginForm').addEventListener('submit', function() {
+    const btn = document.getElementById('loginBtn');
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Signing in...';
+    btn.disabled = true;
+  });
+</script>
+{% endblock %}

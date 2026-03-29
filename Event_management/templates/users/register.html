@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!-- ============================================================ -->
+<!-- File: templates/users/register.html                         -->
+<!-- Django Event Management System — Registration Page          -->
+<!-- Skills: frontend-design + owasp-security + i-motion         -->
+<!-- ============================================================ -->
+
+{% block title %}Create Account{% endblock %}
+{% block meta_description %}Join EventHub — Create your free account and start discovering amazing events near you.{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100 py-5">
+      <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
+
+        <!-- Auth Card -->
+        <div class="card auth-card" data-aos="fade-up">
+
+          <!-- Card Header -->
+          <div class="card-header-auth text-center py-4">
+            <div class="auth-icon-wrapper mb-3">
+              <i class="bi bi-person-plus-fill"></i>
+            </div>
+            <h1 class="h3 fw-700 mb-1">Create Your Account</h1>
+            <p class="text-muted mb-0">Join thousands of event attendees</p>
+          </div>
+
+          <div class="card-body px-4 px-md-5 py-4">
+
+            <!-- Registration Form -->
+            <form method="post" action="{% url 'users:register' %}" novalidate id="registerForm">
+              {% csrf_token %}
+
+              <!-- Name Row -->
+              <div class="row g-3 mb-3">
+                <div class="col-6">
+                  <label for="id_first_name" class="form-label fw-500">
+                    First Name <span class="text-danger">*</span>
+                  </label>
+                  {{ form.first_name }}
+                  {% if form.first_name.errors %}
+                    <div class="invalid-feedback d-block">
+                      <i class="bi bi-exclamation-circle me-1"></i>{{ form.first_name.errors.0 }}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="col-6">
+                  <label for="id_last_name" class="form-label fw-500">
+                    Last Name <span class="text-danger">*</span>
+                  </label>
+                  {{ form.last_name }}
+                  {% if form.last_name.errors %}
+                    <div class="invalid-feedback d-block">
+                      <i class="bi bi-exclamation-circle me-1"></i>{{ form.last_name.errors.0 }}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Email -->
+              <div class="mb-3">
+                <label for="id_email" class="form-label fw-500">
+                  Email Address <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                  {{ form.email }}
+                </div>
+                {% if form.email.errors %}
+                  <div class="invalid-feedback d-block">
+                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.email.errors.0 }}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Phone -->
+              <div class="mb-3">
+                <label for="id_phone" class="form-label fw-500">
+                  Phone Number <span class="text-muted small">(optional)</span>
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-phone"></i></span>
+                  {{ form.phone }}
+                </div>
+                {% if form.phone.errors %}
+                  <div class="invalid-feedback d-block">
+                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.phone.errors.0 }}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Password -->
+              <div class="mb-3">
+                <label for="id_password1" class="form-label fw-500">
+                  Password <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                  {{ form.password1 }}
+                  <button class="btn btn-outline-secondary" type="button"
+                          id="togglePassword1" aria-label="Toggle password visibility">
+                    <i class="bi bi-eye" id="eyeIcon1"></i>
+                  </button>
+                </div>
+                {% if form.password1.errors %}
+                  <div class="invalid-feedback d-block">
+                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.password1.errors.0 }}
+                  </div>
+                {% endif %}
+                <!-- Password strength indicator -->
+                <div class="password-strength mt-2" id="passwordStrength">
+                  <div class="strength-bar">
+                    <div class="strength-fill" id="strengthFill"></div>
+                  </div>
+                  <small id="strengthText" class="text-muted"></small>
+                </div>
+              </div>
+
+              <!-- Confirm Password -->
+              <div class="mb-4">
+                <label for="id_password2" class="form-label fw-500">
+                  Confirm Password <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                  {{ form.password2 }}
+                  <button class="btn btn-outline-secondary" type="button"
+                          id="togglePassword2" aria-label="Toggle confirm password visibility">
+                    <i class="bi bi-eye" id="eyeIcon2"></i>
+                  </button>
+                </div>
+                {% if form.password2.errors %}
+                  <div class="invalid-feedback d-block">
+                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.password2.errors.0 }}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Submit Button -->
+              <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-primary btn-lg btn-auth" id="submitBtn">
+                  <i class="bi bi-person-check me-2"></i>Create My Account
+                </button>
+              </div>
+
+              <!-- Terms note -->
+              <p class="text-muted text-center small mb-0">
+                By registering, you agree to our
+                <a href="#" class="text-primary">Terms of Service</a> and
+                <a href="#" class="text-primary">Privacy Policy</a>.
+              </p>
+            </form>
+          </div>
+
+          <!-- Card Footer -->
+          <div class="card-footer-auth text-center py-3">
+            <span class="text-muted">Already have an account? </span>
+            <a href="{% url 'account_login' %}" class="text-primary fw-600">Sign In →</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Password visibility toggle for password1
+  document.getElementById('togglePassword1').addEventListener('click', function() {
+    const input = document.getElementById('id_password1');
+    const icon = document.getElementById('eyeIcon1');
+    input.type = input.type === 'password' ? 'text' : 'password';
+    icon.className = input.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+  });
+
+  // Password visibility toggle for password2
+  document.getElementById('togglePassword2').addEventListener('click', function() {
+    const input = document.getElementById('id_password2');
+    const icon = document.getElementById('eyeIcon2');
+    input.type = input.type === 'password' ? 'text' : 'password';
+    icon.className = input.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+  });
+
+  // Password strength indicator
+  document.getElementById('id_password1').addEventListener('input', function() {
+    const password = this.value;
+    const fill = document.getElementById('strengthFill');
+    const text = document.getElementById('strengthText');
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    const levels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+    const colors = ['', '#ef4444', '#f97316', '#eab308', '#22c55e'];
+    const widths = ['0%', '25%', '50%', '75%', '100%'];
+    fill.style.width = widths[strength];
+    fill.style.backgroundColor = colors[strength];
+    text.textContent = strength > 0 ? `Password strength: ${levels[strength]}` : '';
+    text.style.color = colors[strength];
+  });
+
+  // Button loading state on submit
+  document.getElementById('registerForm').addEventListener('submit', function() {
+    const btn = document.getElementById('submitBtn');
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating account...';
+    btn.disabled = true;
+  });
+</script>
+{% endblock %}

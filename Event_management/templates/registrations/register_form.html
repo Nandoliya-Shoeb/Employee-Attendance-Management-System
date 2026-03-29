@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!-- ============================================================ -->
+<!-- File: templates/registrations/register_form.html            -->
+<!-- Event Registration Form Page                                -->
+<!-- Skills: frontend-design + ui-ux-pro-max + i-motion         -->
+<!-- ============================================================ -->
+
+{% block title %}Register for {{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="row mb-4" data-aos="fade-down">
+    <div class="col-12">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-custom mb-1">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'events:event_list' %}">Events</a></li>
+          <li class="breadcrumb-item"><a href="{{ event.get_absolute_url }}">{{ event.title|truncatechars:30 }}</a></li>
+          <li class="breadcrumb-item active">Register</li>
+        </ol>
+      </nav>
+      <h2 class="fw-800 mb-0">Complete Registration</h2>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- ── LEFT: Registration Form ───────────────────────────── -->
+    <div class="col-lg-7 col-xl-8" data-aos="fade-right">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4 p-md-5">
+          <h4 class="fw-700 mb-4">Attendee Information</h4>
+
+          <form method="post" id="registrationForm" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger mb-4">
+              {% for error in form.non_field_errors %}
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="mb-4">
+              <label for="{{ form.name.id_for_label }}" class="form-label fw-600">Full Name <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person text-muted"></i></span>
+                {{ form.name }}
+              </div>
+              {% if form.name.errors %}
+                <div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>
+              {% endif %}
+              <small class="text-muted d-block mt-1">This name will appear on your ticket.</small>
+            </div>
+
+            <div class="row g-4 mb-4">
+              <div class="col-md-6">
+                <label for="{{ form.email.id_for_label }}" class="form-label fw-600">Email Address <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-envelope text-muted"></i></span>
+                  {{ form.email }}
+                </div>
+                {% if form.email.errors %}
+                  <div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>
+                {% endif %}
+                <small class="text-muted d-block mt-1">We'll send your ticket here.</small>
+              </div>
+
+              <div class="col-md-6">
+                <label for="{{ form.phone.id_for_label }}" class="form-label fw-600">Phone Number</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-telephone text-muted"></i></span>
+                  {{ form.phone }}
+                </div>
+                {% if form.phone.errors %}
+                  <div class="invalid-feedback d-block">{{ form.phone.errors.0 }}</div>
+                {% endif %}
+                <small class="text-muted d-block mt-1">In case we need to contact you.</small>
+              </div>
+            </div>
+
+            <hr class="my-4 text-muted opacity-25">
+
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <p class="text-muted small mb-0">By registering, you agree to the EventHub Terms.</p>
+              </div>
+              <button type="submit" class="btn btn-primary btn-lg px-5" id="submitBtn">
+                {% if event.is_free %}
+                  Confirm Registration <i class="bi bi-arrow-right ms-2"></i>
+                {% else %}
+                  Proceed to Payment <i class="bi bi-credit-card ms-2"></i>
+                {% endif %}
+              </button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RIGHT: Order Summary ──────────────────────────────── -->
+    <div class="col-lg-5 col-xl-4" data-aos="fade-left" data-aos-delay="100">
+      <div class="card shadow-sm border-0 sticky-top" style="top: 100px;">
+        <div class="card-header bg-transparent border-bottom-0 pt-4 pb-0 px-4">
+          <h5 class="fw-700 mb-0">Order Summary</h5>
+        </div>
+        <div class="card-body p-4">
+          
+          <div class="d-flex gap-3 mb-4">
+            {% if event.cover_image %}
+              <img src="{{ event.cover_image.url }}" alt="{{ event.title }}" class="rounded object-fit-cover" style="width: 80px; height: 80px;">
+            {% else %}
+              <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                <i class="bi bi-calendar-event fs-3 text-muted"></i>
+              </div>
+            {% endif %}
+            <div>
+              <h6 class="fw-700 mb-1 lh-sm">{{ event.title }}</h6>
+              <p class="text-muted small mb-0">
+                <i class="bi bi-calendar3 me-1"></i>{{ event.date|date:"D, M d, Y" }}
+              </p>
+            </div>
+          </div>
+
+          <ul class="list-unstyled mb-4">
+            <li class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted">Ticket (1x)</span>
+              <span class="fw-600">{{ event.price_display }}</span>
+            </li>
+            <li class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted">Taxes & Fees</span>
+              <span class="fw-600">Calculated at checkout</span>
+            </li>
+            <li class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+              <span class="fw-700 fs-5">Total</span>
+              <span class="fw-800 fs-4 text-primary">{{ event.price_display }}</span>
+            </li>
+          </ul>
+
+          <div class="alert alert-info py-2 px-3 mb-0 d-flex align-items-center gap-2 small">
+            <i class="bi bi-shield-check fs-5 text-info"></i>
+            <span>Your information is secure and encrypted.</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.getElementById('registrationForm').addEventListener('submit', function() {
+    const btn = document.getElementById('submitBtn');
+    {% if event.is_free %}
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Confirming...';
+    {% else %}
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+    {% endif %}
+    btn.disabled = true;
+  });
+</script>
+{% endblock %}

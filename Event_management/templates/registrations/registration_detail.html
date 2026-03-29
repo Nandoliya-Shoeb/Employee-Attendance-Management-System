@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+<!-- ============================================================ -->
+<!-- File: templates/registrations/registration_detail.html      -->
+<!-- Ticket Detail / View Ticket Page                            -->
+<!-- ============================================================ -->
+
+{% block title %}Ticket: {{ registration.event.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <nav aria-label="breadcrumb" class="mb-4" data-aos="fade-down">
+    <ol class="breadcrumb breadcrumb-custom mb-1">
+      <li class="breadcrumb-item"><a href="/">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'registrations:my_registrations' %}">My Tickets</a></li>
+      <li class="breadcrumb-item active">Ticket Detail</li>
+    </ol>
+  </nav>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-8">
+      
+      {% if registration.is_cancelled %}
+        <div class="alert alert-danger mb-4 d-flex align-items-center gap-3 shadow-sm border-0" data-aos="fade-down">
+          <i class="bi bi-x-circle-fill fs-3 text-danger"></i>
+          <div>
+            <h5 class="alert-heading mb-1 fw-700 text-danger">Registration Cancelled</h5>
+            <p class="mb-0 small">This registration was cancelled on {{ registration.cancelled_at|date:"F d, Y" }}.</p>
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="card shadow-lg border-0 overflow-hidden" data-aos="zoom-in" data-aos-delay="100">
+        <!-- Ticket Header (Colored based on status) -->
+        <div class="p-4 p-md-5 text-white position-relative
+             {% if registration.is_cancelled %}bg-danger bg-opacity-75
+             {% elif registration.status == 'pending' %}bg-warning
+             {% else %}bg-primary{% endif %}">
+          
+          <div class="d-flex justify-content-between align-items-start position-relative z-index-1">
+            <div>
+              <span class="badge bg-white text-dark mb-2 px-3 py-1 fw-700 shadow-sm">
+                {{ registration.get_status_display|upper }}
+              </span>
+              <h2 class="fw-800 mb-1 text-white">{{ registration.event.title }}</h2>
+              <p class="mb-0 fw-500 opacity-75">
+                <i class="bi bi-geo-alt me-1"></i>{{ registration.event.location }}
+              </p>
+            </div>
+            
+            {% if registration.is_confirmed and ticket %}
+              <div class="d-none d-sm-block text-end bg-white rounded p-2 shadow-sm">
+                <div class="text-primary fw-800 fs-5 lh-1 mb-1">TICKET</div>
+                <div class="text-muted small fw-600 lh-1">#{{ ticket.ticket_number_short }}</div>
+              </div>
+            {% endif %}
+          </div>
+          
+          <!-- Decorative curve -->
+           <div class="position-absolute bottom-0 start-0 w-100" style="height: 20px; background: radial-gradient(circle at 10px 0, transparent 10px, var(--color-bg-card) 11px); background-size: 20px 20px; background-repeat: repeat-x;"></div>
+        </div>
+
+        <!-- Ticket Body -->
+        <div class="card-body p-4 p-md-5">
+          <div class="row g-4 align-items-center flex-column-reverse flex-md-row">
+            
+            <!-- Details -->
+            <div class="col-md-8">
+              <h5 class="fw-700 text-muted mb-4 border-bottom pb-2">Attendee Information</h5>
+              
+              <div class="row g-4 mb-4">
+                <div class="col-sm-6">
+                  <p class="text-muted small text-uppercase fw-700 tracking-wide mb-1">Name</p>
+                  <p class="fw-600 fs-5 mb-0">{{ registration.name }}</p>
+                </div>
+                <div class="col-sm-6">
+                  <p class="text-muted small text-uppercase fw-700 tracking-wide mb-1">Email</p>
+                  <p class="fw-600 mb-0">{{ registration.email }}</p>
+                </div>
+                <div class="col-sm-6">
+                  <p class="text-muted small text-uppercase fw-700 tracking-wide mb-1">Date & Time</p>
+                  <p class="fw-600 mb-0">
+                    {{ registration.event.date|date:"M d, Y" }}<br>
+                    <small class="text-muted">{{ registration.event.date|date:"g:i A" }}</small>
+                  </p>
+                </div>
+                <div class="col-sm-6">
+                  <p class="text-muted small text-uppercase fw-700 tracking-wide mb-1">Ticket Type</p>
+                  <p class="fw-600 mb-0">General Admission - {{ registration.event.price_display }}</p>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- QR Code -->
+            <div class="col-md-4 text-center border-start-md ps-md-4">
+              {% if registration.is_confirmed and registration.qr_code %}
+                <div class="bg-light p-3 rounded d-inline-block shadow-sm">
+                  <img src="{{ registration.qr_code.url }}" alt="QR Code" class="img-fluid" style="max-width: 150px;">
+                </div>
+                <p class="text-muted small mt-2 mb-0">Scan for entry</p>
+              {% elif registration.is_cancelled %}
+                 <div class="bg-light p-4 rounded d-inline-block text-muted">
+                   <i class="bi bi-slash-circle fs-1"></i>
+                 </div>
+              {% else %}
+                <div class="bg-light p-4 rounded d-inline-block text-warning">
+                   <i class="bi bi-hourglass-split fs-1"></i>
+                   <p class="mt-2 mb-0 small fw-600">Awaiting Payment</p>
+                 </div>
+              {% endif %}
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Ticket Footer / Actions -->
+        <div class="card-footer bg-light p-4 border-top-dashed d-flex flex-column flex-sm-row gap-3 justify-content-between align-items-center">
+          <div>
+            <span class="text-muted small">Registered on {{ registration.registered_at|date:"M d, Y" }}</span>
+          </div>
+          <div class="d-flex gap-2 w-100 w-sm-auto">
+            {% if registration.status == 'pending' %}
+               <a href="{% url 'registrations:payment' registration.pk %}" class="btn btn-warning flex-grow-1">
+                Complete Payment
+               </a>
+            {% elif registration.is_confirmed and ticket and ticket.pdf_file %}
+              <a href="{% url 'registrations:download_ticket' registration.pk %}" class="btn btn-primary flex-grow-1">
+                <i class="bi bi-download me-2"></i>Download PDF
+              </a>
+            {% endif %}
+
+            {% if registration.can_cancel %}
+              <a href="{% url 'registrations:cancel' registration.pk %}" class="btn btn-outline-danger">
+                Cancel
+              </a>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+  .border-top-dashed {
+    border-top: 2px dashed var(--color-border) !important;
+  }
+  @media (min-width: 768px) {
+    .border-start-md {
+      border-left: 1px solid var(--color-border);
+    }
+  }
+  .tracking-wide {
+    letter-spacing: 0.05em;
+  }
+</style>
+{% endblock %}

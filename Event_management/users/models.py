@@ -48,6 +48,11 @@ class CustomUser(AbstractUser):
         help_text='Upload a profile picture (JPG/PNG, max 2MB).'
     )
 
+    @property
+    def profile_pic(self):
+        """Alias for strict spec compliance."""
+        return self.profile_picture
+
     # Phone number — optional, used for ticket contact
     phone = models.CharField(
         max_length=15,

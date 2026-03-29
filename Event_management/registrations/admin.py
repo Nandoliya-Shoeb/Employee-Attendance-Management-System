@@ -5,7 +5,7 @@
 
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Registration, Ticket
+from .models import Registration, Ticket, Payment
 
 
 class TicketInline(admin.StackedInline):
@@ -83,3 +83,10 @@ class TicketAdmin(admin.ModelAdmin):
             return format_html('<span style="color:#22c55e;">✅ Available</span>')
         return format_html('<span style="color:#ef4444;">❌ Missing</span>')
     has_pdf.short_description = 'PDF'
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    """Admin configuration for Payment model."""
+    list_display = ('razorpay_order_id', 'amount', 'status', 'created_at')
+    search_fields = ('razorpay_order_id', 'razorpay_payment_id', 'registration__name')
+    list_filter = ('status', 'created_at')

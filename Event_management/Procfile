@@ -1,0 +1,3 @@
+web: gunicorn personal_events.wsgi:application --log-file -
+celery-worker: celery -A personal_events worker -l info
+celery-beat: celery -A personal_events beat -l info

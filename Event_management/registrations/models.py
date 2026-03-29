@@ -190,3 +190,61 @@ class Ticket(models.Model):
     def ticket_number_short(self):
         """Return first 8 chars of UUID for display."""
         return str(self.ticket_number)[:8].upper()
+
+
+class Payment(models.Model):
+    """
+    Payment model — tracks Razorpay transactions.
+    """
+    STATUS_PENDING = 'pending'
+    STATUS_SUCCESS = 'success'
+    STATUS_FAILED = 'failed'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_SUCCESS, 'Success'),
+        (STATUS_FAILED, 'Failed'),
+    ]
+
+    registration = models.ForeignKey(
+        Registration,
+        on_delete=models.CASCADE,
+        related_name='payments',
+        help_text='The registration this payment is for.'
+    )
+    razorpay_order_id = models.CharField(
+        max_length=255,
+        unique=True,
+        help_text='Razorpay Order ID.'
+    )
+    razorpay_payment_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text='Razorpay Payment ID (populated on success).'
+    )
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text='Amount paid in INR.'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_PENDING
+    )
+    paid_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text='Timestamp when payment was successful.'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Payment'
+        verbose_name_plural = 'Payments'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Payment {self.razorpay_order_id} - {self.status}"
+

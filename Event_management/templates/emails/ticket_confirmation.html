@@ -21,13 +21,15 @@
     .btn { display: inline-block; background-color: #6366f1; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; margin-top: 20px; text-align: center; }
     .footer { background-color: #f1f5f9; padding: 20px; text-align: center; color: #64748b; font-size: 12px; }
     .notice { padding: 15px; background-color: #e0f2fe; color: #0369a1; border-radius: 6px; font-size: 13px; margin-top: 20px; }
+    .p-sub { margin: 10px 0 0 0; color: #94a3b8; }
+    .btn-container { text-align: center; margin-top: 30px; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
       <h1>🎉 You're going to {{ event.title }}!</h1>
-      <p style="margin: 10px 0 0 0; color: #94a3b8;">Your registration is confirmed.</p>
+      <p class="p-sub">Your registration is confirmed.</p>
     </div>
     
     <div class="content">
@@ -69,7 +71,7 @@
       </div>
       {% endif %}
       
-      <div style="text-align: center; margin-top: 30px;">
+      <div class="btn-container">
         <a href="http://127.0.0.1:8000{% url 'registrations:registration_detail' registration.pk %}" class="btn">View Ticket Online</a>
       </div>
     </div>

@@ -14,7 +14,7 @@ from django.http import FileResponse, Http404
 from django.db import transaction
 
 from events.models import Event
-from .models import Registration, Ticket
+from .models import Registration, Ticket, Payment
 from .forms import RegistrationForm
 from .utils import generate_qr_code, generate_pdf_ticket, send_confirmation_email
 
@@ -303,6 +303,14 @@ def payment_page(request, pk):
         }
     })
 
+    # Record the pending payment
+    Payment.objects.create(
+        registration=registration,
+        razorpay_order_id=razorpay_order['id'],
+        amount=event.price,
+        status=Payment.STATUS_PENDING
+    )
+
     context = {
         'registration': registration,
         'event': event,
@@ -342,6 +350,17 @@ def payment_callback(request, pk):
             registration.status = Registration.STATUS_CONFIRMED
             registration.save()
 
+            # Update Payment Record
+            from django.utils import timezone
+            try:
+                payment = Payment.objects.get(razorpay_order_id=order_id)
+                payment.razorpay_payment_id = payment_id
+                payment.status = Payment.STATUS_SUCCESS
+                payment.paid_at = timezone.now()
+                payment.save()
+            except Payment.DoesNotExist:
+                pass
+
             # 3. Offload sending the PDF confirmation email to Celery
             from .tasks import send_confirmation_email_task
             send_confirmation_email_task.delay(registration.pk)
@@ -350,6 +369,13 @@ def payment_callback(request, pk):
             return redirect('registrations:success', pk=registration.pk)
 
         except razorpay.errors.SignatureVerificationError:
+            try:
+                payment = Payment.objects.get(razorpay_order_id=order_id)
+                payment.status = Payment.STATUS_FAILED
+                payment.save()
+            except Payment.DoesNotExist:
+                pass
+            
             messages.error(request, "Payment verification failed. If money was deducted, it will be refunded.")
             return redirect('registrations:payment', pk=registration.pk)
 

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'crispy_forms',
     'crispy_bootstrap5',
     'django_htmx',
@@ -64,11 +65,11 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',     # CSRF protection
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'axes.middleware.AxesMiddleware',               # MUST be after AuthenticationMiddleware
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware',
+    'allauth.account.middleware.AccountMiddleware',  # Must be after AxesMiddleware
     'django_htmx.middleware.HtmxMiddleware',
-    'axes.middleware.AxesMiddleware',               # Must be last auth-related
 ]
 
 ROOT_URLCONF = 'personal_events.urls'
@@ -98,19 +99,27 @@ WSGI_APPLICATION = 'personal_events.wsgi.application'
 # ----------------------------------------------------------
 # DATABASE — database-design skill: PostgreSQL only
 # ----------------------------------------------------------
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
-        'OPTIONS': {
-            'connect_timeout': 10,
-        },
+if config('USE_SQLITE', default=False, cast=bool):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DB_NAME'),
+            'USER': config('DB_USER'),
+            'PASSWORD': config('DB_PASSWORD'),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='5432'),
+            'OPTIONS': {
+                'connect_timeout': 10,
+            },
+        }
+    }
 
 # ----------------------------------------------------------
 # AUTHENTICATION — owasp-security skill
@@ -132,14 +141,32 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5              # owasp: 5 attempts max
-ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 300          # 5 minutes lockout
+ACCOUNT_RATE_LIMITS = {
+    'login_failed': '5/5m',                    # owasp: 5 attempts per 5 minutes
+}
 ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 LOGIN_URL = '/accounts/login/'
 
+# OTP AND SOCIAL AUTH
+from allauth.account.adapter import DefaultAccountAdapter
+from allauth.socialaccount.adapter import DefaultSocialAccountAdapte
+ACCOUNT_ADAPTER = 'users.adapter.CustomAccountAdapter'
+ACCOUNT_EMAIL_CONFIRMATION_HMAC = False
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': config('GOOGLE_CLIENT_ID ',default=''),
+            'secret': config('GOOGLE_CLIENT_SECRET',default=''),
+            'key': ''
+        },
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+        'OAUTH_PKCE_ENABLED': True,
+    }
+}
 # ----------------------------------------------------------
 # PASSWORD VALIDATION — owasp-security skill
 # ----------------------------------------------------------
@@ -169,6 +196,8 @@ AXES_COOLOFF_TIME = 0.08333                         # 5 minutes in hours
 AXES_LOCK_OUT_AT_FAILURE = True
 AXES_RESET_ON_SUCCESS = True
 AXES_LOCKOUT_TEMPLATE = 'users/lockout.html'
+AXES_LOCKOUT_PARAMETERS = ['username']              # Only lock by username, not IP
+AXES_ENABLE_ADMIN = False                           # Don't interfere with admin sessions
 
 # ----------------------------------------------------------
 # INTERNATIONALIZATION
@@ -246,3 +275,5 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+
+
